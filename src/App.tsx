@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+/* eslint-disable @typescript-eslint/indent */
+import React, { useState, Dispatch, SetStateAction } from 'react';
 import 'bulma/css/bulma.css';
 import './App.scss';
 import classNames from 'classnames';
@@ -63,8 +64,10 @@ function getPreparedGoods(
         return updatedList.sort((a, b) => a.length - b.length);
       case 'Reverse':
         return updatedList.reverse();
+      case 'Reset':
+        return goods;
       default:
-        return updatedList;
+        return [];
     }
   }
 
@@ -73,14 +76,14 @@ function getPreparedGoods(
 
 type ButtonsProps = {
   sortField: keyof typeof SortType | '';
-  setSortField: React.Dispatch<
-    React.SetStateAction<keyof typeof SortType | ''>
-  >;
+  setSortField: Dispatch<SetStateAction<keyof typeof SortType | ''>>;
+  setVisibleGood: Dispatch<SetStateAction<string[]>>;
 };
 
 export const Buttons: React.FC<ButtonsProps> = ({
   sortField,
   setSortField,
+  setVisibleGood,
 }) => {
   return (
     <div className="buttons">
@@ -88,7 +91,12 @@ export const Buttons: React.FC<ButtonsProps> = ({
         <button
           type="button"
           key={nameOfButton}
-          onClick={() => setSortField(nameOfButton)}
+          onClick={() => {
+            const newSortField = sortField === nameOfButton ? '' : nameOfButton;
+
+            setSortField(newSortField);
+            setVisibleGood(getPreparedGoods(goodsFromServer, newSortField));
+          }}
           className={classNames('button', `${typesOfButtons[index]}`, {
             'is-light': sortField !== nameOfButton,
           })}
@@ -102,12 +110,15 @@ export const Buttons: React.FC<ButtonsProps> = ({
 
 export const App: React.FC = () => {
   const [sortField, setSortField] = useState<keyof typeof SortType | ''>('');
-
-  const visibleGoods: string[] = getPreparedGoods(goodsFromServer, sortField);
+  const [visibleGoods, setVisibleGoods] = useState([...goodsFromServer]);
 
   return (
     <div className="section content">
-      <Buttons sortField={sortField} setSortField={setSortField} />
+      <Buttons
+        sortField={sortField}
+        setSortField={setSortField}
+        setVisibleGood={setVisibleGoods}
+      />
 
       <GoodList visibleGoods={visibleGoods} />
     </div>

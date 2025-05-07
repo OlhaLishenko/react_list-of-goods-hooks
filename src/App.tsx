@@ -65,7 +65,7 @@ function getPreparedGoods(
       case 'Reverse':
         return updatedList.reverse();
       case 'Reset':
-        return goods;
+        return [...goodsFromServer];
       default:
         return [];
     }
